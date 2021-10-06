@@ -31,13 +31,14 @@ from airbyte_cdk.logger import AirbyteLogger
 
 
 class StorageFile(ABC):
-    def __init__(self, url: str, provider: dict):
+    def __init__(self, url: str, provider: dict, additional_params: dict):
         """
         :param url: value yielded by filepath_iterator() in [Incremental]FileStream class. Blob/File path.
         :param provider: provider specific mapping as described in spec.json
         """
         self.url = url
         self._provider = provider
+        self._additional_params = additional_params
         self.logger = AirbyteLogger()
 
     @property

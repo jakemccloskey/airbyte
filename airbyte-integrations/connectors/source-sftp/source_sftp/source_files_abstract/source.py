@@ -85,7 +85,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
                 found_a_file = True
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
+                globmatch(filepath[0], config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 break  # just need first file here to test connection and valid patterns
 
         except Exception as e:

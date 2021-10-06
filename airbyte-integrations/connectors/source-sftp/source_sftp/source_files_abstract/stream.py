@@ -144,7 +144,7 @@ class FileStream(Stream, ABC):
 
     @staticmethod
     @abstractmethod
-    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
+    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[Tuple[str, dict]]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
@@ -155,7 +155,7 @@ class FileStream(Stream, ABC):
         :yield: url filepath to use in StorageFile()
         """
 
-    def pattern_matched_filepath_iterator(self, filepaths: Iterable[str]) -> Iterator[str]:
+    def pattern_matched_filepath_iterator(self, filepaths: Iterable[Tuple[str, dict]]) -> Iterator[Tuple[str, dict]]:
         """
         iterates through iterable filepaths and yields only those filepaths that match user-provided path patterns
 
@@ -163,7 +163,7 @@ class FileStream(Stream, ABC):
         :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
         """
         for filepath in filepaths:
-            if globmatch(filepath, self._path_pattern, flags=GLOBSTAR | SPLIT):
+            if globmatch(filepath[0], self._path_pattern, flags=GLOBSTAR | SPLIT):
                 yield filepath
 
     def time_ordered_storagefile_iterator(self) -> Iterable[Tuple[datetime, StorageFile]]:
@@ -175,8 +175,8 @@ class FileStream(Stream, ABC):
         :return: list in time-ascending order
         """
 
-        def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, StorageFile]:
-            fc = self.storagefile_class(filepath, self._provider)
+        def get_storagefile_with_lastmod(filepath: str, additional_params: dict) -> Tuple[datetime, StorageFile]:
+            fc = self.storagefile_class(filepath, self._provider, additional_params)
             return (fc.last_modified, fc)
 
         if self.storagefile_cache is None:
@@ -184,10 +184,9 @@ class FileStream(Stream, ABC):
             # use concurrent future threads to parallelise grabbing last_modified from all the files
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-
                 filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
 
-                futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
+                futures = [executor.submit(get_storagefile_with_lastmod, fp[0], fp[1]) for fp in filepath_gen]
 
                 for future in concurrent.futures.as_completed(futures):
                     # this will failfast on any errors

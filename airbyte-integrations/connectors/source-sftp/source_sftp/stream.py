@@ -25,7 +25,8 @@
 
 import stat
 import os
-from typing import Any, Iterator, Mapping
+from typing import Iterator, Tuple
+from datetime import datetime, timezone
 
 from airbyte_cdk.logger import AirbyteLogger
 
@@ -40,20 +41,17 @@ class IncrementalFileStreamSftp(IncrementalFileStream):
         return SftpFile
 
     @staticmethod
-    def _recurse_through(sftp_client, path) -> Iterator[str]:
+    def _recurse_through(sftp_client, path) -> Iterator[Tuple[str, dict]]:
         for file in sftp_client.listdir_attr(path):
             full_path = os.path.join(path, file.filename)
 
             if stat.S_ISDIR(file.st_mode):
                 yield from IncrementalFileStreamSftp._recurse_through(sftp_client, full_path)
-                print(full_path)
             else:
-                yield full_path[2:]
-                print(full_path)
-
+                yield (full_path[2:], {"st_mtime": file.st_mtime})
 
     @staticmethod
-    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
+    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[Tuple[str, dict]]:
         """
         See _list_bucket() for logic of interacting with S3
 
@@ -63,5 +61,5 @@ class IncrementalFileStreamSftp(IncrementalFileStream):
         """
         sftp_client = create_sftp_client(provider)
 
-        for full_path in IncrementalFileStreamSftp._recurse_through(sftp_client, "."):
-            yield full_path
+        for obj in IncrementalFileStreamSftp._recurse_through(sftp_client, "."):
+            yield obj
