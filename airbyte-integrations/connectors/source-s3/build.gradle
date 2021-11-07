@@ -7,3 +7,7 @@ plugins {
 airbytePython {
     moduleDirectory 'source_s3'
 }
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-file-source').airbyteDocker.outputs)
+}

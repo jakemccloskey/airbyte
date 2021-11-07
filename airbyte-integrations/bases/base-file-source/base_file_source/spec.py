@@ -13,9 +13,9 @@ from pydantic import BaseModel, Field
 from .formats.csv_spec import CsvFormat
 from .formats.parquet_spec import ParquetFormat
 
-# To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
+# To implement your provider specific spec, inherit from AbstractFileSourceSpec and add provider-specific settings e.g.:
 
-# class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
+# class SourceS3Spec(AbstractFileSourceSpec, BaseModel):
 #     class Config:
 #         title="S3 Source Spec"
 

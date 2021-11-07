@@ -10,11 +10,12 @@ from botocore import UNSIGNED
 from botocore.config import Config
 from source_s3.s3_utils import make_s3_client
 
+from base_file_source.stream import AbstractIncrementalFileStream
+
 from .s3file import S3File
-from .source_files_abstract.stream import IncrementalFileStream
 
 
-class IncrementalFileStreamS3(IncrementalFileStream):
+class IncrementalFileStreamS3(AbstractIncrementalFileStream):
     @property
     def storagefile_class(self) -> type:
         return S3File

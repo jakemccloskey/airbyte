@@ -1,4 +1,4 @@
-FROM python:3.7-slim as base
+FROM airbyte/integration-base-file-source:0.0.1 as base
 FROM base as builder
 
 RUN apt-get update
@@ -17,5 +17,5 @@ COPY source_s3 ./source_s3
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.7
+LABEL io.airbyte.version=0.1.8
 LABEL io.airbyte.name=airbyte/source-s3
