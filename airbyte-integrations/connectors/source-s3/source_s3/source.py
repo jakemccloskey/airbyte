@@ -7,12 +7,13 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from .source_files_abstract.source import SourceFilesAbstract
-from .source_files_abstract.spec import SourceFilesAbstractSpec
+from base_file_source.source import AbstractFileSource
+from base_file_source.spec import AbstractFileSourceSpec
+
 from .stream import IncrementalFileStreamS3
 
 
-class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
+class SourceS3Spec(AbstractFileSourceSpec, BaseModel):
     class Config:
         title = "S3 Source Spec"
 
@@ -43,7 +44,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     provider: S3Provider
 
 
-class SourceS3(SourceFilesAbstract):
+class SourceS3(AbstractFileSource):
     stream_class = IncrementalFileStreamS3
     spec_class = SourceS3Spec
     documentation_url = "https://docs.airbyte.io/integrations/sources/s3"

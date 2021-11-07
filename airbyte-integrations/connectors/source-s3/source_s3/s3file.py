@@ -13,12 +13,13 @@ from botocore import UNSIGNED
 from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
+
+from base_file_source.storagefile import AbstractStorageFile
+
 from source_s3.s3_utils import make_s3_client, make_s3_resource
 
-from .source_files_abstract.storagefile import StorageFile
 
-
-class S3File(StorageFile):
+class S3File(AbstractStorageFile):
     def __init__(self, url: str, provider: dict):
         super().__init__(url, provider)
         self._setup_boto_session()

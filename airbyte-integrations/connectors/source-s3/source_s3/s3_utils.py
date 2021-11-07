@@ -5,8 +5,6 @@
 import boto3.session
 from botocore.client import Config
 
-from .source import SourceFilesAbstract
-
 
 def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:
     """
@@ -54,4 +52,4 @@ def _get_s3_client_args(provider: dict, config: Config) -> dict:
     return client_kv_args
 
 
-__all__ = ["SourceFilesAbstract", "make_s3_client", "make_s3_resource"]
+__all__ = ["make_s3_client", "make_s3_resource"]
