@@ -123,25 +123,25 @@ class AbstractFileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator() -> Iterator[str]:
+    def filepath_iterator() -> Iterator[Tuple[str, Optional[datetime]]]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
             e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
 
-        :yield: url filepath to use in StorageFile()
+        :yield: (url, last_modified) filepath and last modified time to use in StorageFile()
         """
 
-    def pattern_matched_filepath_iterator(self, filepaths: Iterable[str]) -> Iterator[str]:
+    def pattern_matched_filepath_iterator(self, fileinfos: Iterable[Tuple[str, Optional[datetime]]]) -> Iterator[Tuple[str, Optional[datetime]]]:
         """
-        iterates through iterable filepaths and yields only those filepaths that match user-provided path patterns
+        iterates through iterable fileinfos and yields only those fileinfos that match user-provided path patterns
 
-        :param filepaths: filepath_iterator(), this is a param rather than method reference in order to unit test this
-        :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
+        :param fileinfos: filepath_iterator(), this is a param rather than method reference in order to unit test this
+        :yield: (url, last_modified) filepath and last modified time to use in StorageFile(), if matching on user-provided path patterns
         """
-        for filepath in filepaths:
-            if globmatch(filepath, self._path_pattern, flags=GLOBSTAR | SPLIT):
-                yield filepath
+        for fileinfo in fileinfos:
+            if globmatch(fileinfo[0], self._path_pattern, flags=GLOBSTAR | SPLIT):
+                yield fileinfo
 
     @lru_cache(maxsize=None)
     def get_time_ordered_filepaths(self) -> Iterable[Tuple[datetime, str]]:
@@ -153,9 +153,9 @@ class AbstractFileStream(Stream, ABC):
         :return: list in time-ascending order
         """
 
-        def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, str]:
-            fc = self.storagefile_class(filepath, self._provider)
-            return (fc.last_modified, filepath)
+        def get_storagefile_with_lastmod(fileinfo: Tuple[str, Optional[datetime]]) -> Tuple[datetime, str]:
+            fc = self.storagefile_class(fileinfo[0], self._provider, fileinfo[1])
+            return (fc.last_modified, fileinfo[0])
 
         storagefiles = []
         # use concurrent future threads to parallelise grabbing last_modified from all the files
@@ -222,7 +222,7 @@ class AbstractFileStream(Stream, ABC):
                 if (min_datetime is not None) and (last_mod < min_datetime):
                     continue
 
-                storagefile = self.storagefile_class(filepath, self._provider)
+                storagefile = self.storagefile_class(filepath, self._provider, last_mod)
                 with storagefile.open(file_reader.is_binary) as f:
                     this_schema = file_reader.get_inferred_schema(f)
 
@@ -277,7 +277,7 @@ class AbstractFileStream(Stream, ABC):
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for last_mod, filepath in self.get_time_ordered_filepaths():
-            storagefile = self.storagefile_class(filepath, self._provider)
+            storagefile = self.storagefile_class(filepath, self._provider, last_mod)
             yield [{"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile}]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
@@ -437,7 +437,7 @@ class AbstractIncrementalFileStream(AbstractFileStream, ABC):
                 ):
                     continue
 
-                storagefile = self.storagefile_class(filepath, self._provider)
+                storagefile = self.storagefile_class(filepath, self._provider, last_mod)
                 # check if this storagefile belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (last_mod != prev_file_last_mod):
                     yield stream_slice

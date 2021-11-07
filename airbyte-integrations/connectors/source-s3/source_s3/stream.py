@@ -3,7 +3,8 @@
 #
 
 
-from typing import Iterator
+from datetime import datetime
+from typing import Iterator, Optional, Tuple
 
 from boto3 import session as boto3session
 from botocore import UNSIGNED
@@ -56,12 +57,12 @@ class IncrementalFileStreamS3(AbstractIncrementalFileStream):
                 for c in content:
                     key = c["Key"]
                     if accept_key(key):
-                        yield key
+                        yield (key, None)
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
 
-    def filepath_iterator(self) -> Iterator[str]:
+    def filepath_iterator(self) -> Iterator[Tuple[str, Optional[datetime]]]:
         """
         See _list_bucket() for logic of interacting with S3
 

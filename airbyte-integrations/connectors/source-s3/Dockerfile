@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-file-source:0.0.1 as base
+FROM airbyte/integration-base-file-source:0.0.2 as base
 FROM base as builder
 
 RUN apt-get update
