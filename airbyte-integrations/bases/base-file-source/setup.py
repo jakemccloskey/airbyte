@@ -18,4 +18,11 @@ setup(
         "dill==0.3.4",
         "pytz",
     ],
+    extras_require={
+        "tests": [
+            "pytest~=6.1",
+            "pandas==1.3.1",
+            "smart-open==5.1.0",
+        ],
+    },
 )
