@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Any, List, Mapping
 
-from source_s3.source_files_abstract.formats.csv_parser import CsvParser
+from base_file_source.formats.csv_parser import CsvParser
 
 from .abstract_test_parser import AbstractTestParser
 

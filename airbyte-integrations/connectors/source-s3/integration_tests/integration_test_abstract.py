@@ -12,8 +12,8 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.source_files_abstract.formats.csv_parser import CsvParser
-from source_s3.source_files_abstract.stream import FileStream
+from base_file_source.formats.csv_parser import CsvParser
+from base_file_source.stream import AbstractFileStream
 
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
@@ -34,7 +34,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string", FileStream.ab_file_name_col: "string"}
+        return {AbstractFileStream.ab_additional_col: "object", AbstractFileStream.ab_last_mod_col: "string", AbstractFileStream.ab_file_name_col: "string"}
 
     @property
     @abstractmethod
@@ -102,7 +102,7 @@ class AbstractTestIncrementalFileStream(ABC):
         # emulate state for incremental testing
         # since we're not actually saving state out to file here, we pass schema in to our FileStream creation...
         # this isn't how it will work in Airbyte but it's a close enough emulation
-        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
+        current_state = state if state is not None else {AbstractFileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
         if (user_schema is None) and ("schema" in current_state.keys()):
             user_schema = current_state["schema"]
 
@@ -148,7 +148,7 @@ class AbstractTestIncrementalFileStream(ABC):
             if (user_schema is not None) and (expected_columns != set(user_schema.keys())):
                 for additional_property in expected_columns.difference(set(user_schema.keys())):
                     # since we can't be dynamically aware of which records should have which additional props, we just any() check here
-                    assert any([additional_property in r[FileStream.ab_additional_col].keys() for r in records])
+                    assert any([additional_property in r[AbstractFileStream.ab_additional_col].keys() for r in records])
 
             # returning state by simulating call to get_updated_state() with final record so we can test incremental
             return fs.get_updated_state(current_stream_state=current_state, latest_record=records[-1])

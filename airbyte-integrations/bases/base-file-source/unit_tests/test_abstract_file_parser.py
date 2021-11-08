@@ -5,7 +5,7 @@
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.source_files_abstract.formats.abstract_file_parser import AbstractFileParser
+from base_file_source.formats.abstract_file_parser import AbstractFileParser
 
 LOGGER = AirbyteLogger()
 
