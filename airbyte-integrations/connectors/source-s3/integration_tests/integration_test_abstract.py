@@ -34,7 +34,11 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {AbstractFileStream.ab_additional_col: "object", AbstractFileStream.ab_last_mod_col: "string", AbstractFileStream.ab_file_name_col: "string"}
+        return {
+            AbstractFileStream.ab_additional_col: "object",
+            AbstractFileStream.ab_last_mod_col: "string",
+            AbstractFileStream.ab_file_name_col: "string",
+        }
 
     @property
     @abstractmethod

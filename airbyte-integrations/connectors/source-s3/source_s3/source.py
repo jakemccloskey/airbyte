@@ -5,10 +5,9 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
-
 from base_file_source.source import AbstractFileSource
 from base_file_source.spec import AbstractFileSourceSpec
+from pydantic import BaseModel, Field
 
 from .stream import IncrementalFileStreamS3
 

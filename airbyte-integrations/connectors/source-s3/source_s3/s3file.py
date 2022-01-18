@@ -8,14 +8,12 @@ from datetime import datetime
 from typing import BinaryIO, Iterator, TextIO, Union
 
 import smart_open
+from base_file_source.storagefile import AbstractStorageFile
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
-
-from base_file_source.storagefile import AbstractStorageFile
-
 from source_s3.s3_utils import make_s3_client, make_s3_resource
 
 
